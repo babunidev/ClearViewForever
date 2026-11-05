@@ -6,3 +6,4 @@
 ## SavedVariables: ClearViewForeverDB
 
 ClearViewForever.lua
+ClearViewForeverOptions.lua
