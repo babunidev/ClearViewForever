@@ -7,3 +7,4 @@
 
 ClearViewForever.lua
 ClearViewForeverOptions.lua
+ClearViewForeverPortrait.lua
