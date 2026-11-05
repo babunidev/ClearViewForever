@@ -27,7 +27,7 @@ local function EnsureOverlay()
         label:SetTextColor(1, 0.88, 0.3, 1)
         label:SetShadowOffset(1, -1)
         label:Hide()
-        labels[i] = { text = label, untilTime = 0 }
+        labels[i] = { text = label, untilTime = 0, offset = (i - 1) * 10 }
     end
     overlay:Hide()
     overlay:SetScript("OnUpdate", function(self)
@@ -96,7 +96,8 @@ handler:SetScript("OnEvent", function(_, event, unit, action, flag, amount)
     local ok, value = pcall(tostring, amount)
     if not ok then return end
     chosen.text:SetText(value)
-    chosen.text:SetPoint("CENTER", overlay, "CENTER", 0, 2)
+    chosen.text:ClearAllPoints()
+    chosen.text:SetPoint("CENTER", overlay, "CENTER", 0, 2 + chosen.offset)
     chosen.text:SetAlpha(1)
     chosen.untilTime = now + duration
     chosen.text:Show()
