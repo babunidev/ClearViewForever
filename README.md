@@ -9,7 +9,7 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 - **Central red error messages:** hides the default UIErrorsFrame messages. Confirmed by Babuni in-game on November 5, 2026.
 - **Floating combat damage/healing numbers:** disables supported combat-text CVars. Confirmed by Babuni in-game on November 5, 2026.
 - **Creature names:** requests that normal NPC name CVars be disabled, but the **selected target's native 3D overhead name remains visible**. Not solved.
-- **XP popups:** optional **experimental** workaround via `/cvf xp on`. This changes **all native floating world text** using `WorldTextScale_v2` or `WorldTextScale`, not XP alone. It is disabled by default, is not verified in Forever, and may affect other world labels. `/cvf xp off` attempts to restore the saved original scale; it will not overwrite a scale changed by another addon.
+- **XP popups:** confirmed by Babuni in-game after toggling the feature off and on. It uses an optional **experimental** workaround via `/cvf xp on`. This changes **all native floating world text** using `WorldTextScale_v2` or `WorldTextScale`, not XP alone. It is disabled by default, has been confirmed to hide XP in Forever but may affect other world labels. `/cvf xp off` attempts to restore the saved original scale; it will not overwrite a scale changed by another addon.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
 
@@ -17,8 +17,13 @@ The addon does not alter the target selection circle, target unit frame, combat 
 
 Put the repository files in `World of Warcraft/_forever_/Interface/AddOns/ClearViewForever/`, so that `ClearViewForever.toc` sits directly inside that directory. Enable the addon in the Forever client.
 
+## In-game menu
+
+Type **`/cvf`** or **`/cvf menu`** to open a compact window with four checkboxes: XP popups, red error messages, combat numbers, and creature names. Checkboxes mean **hide**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The XP checkbox changes global world-text scaling, not XP alone.
+
 ## Commands
 
+- `/cvf` or `/cvf menu` — toggle the options window.
 - `/cvf status` — show enabled controls and limitations.
 - `/cvf diagnose` — print client build, name-related CVars (including the nameplate-only diagnostic), and combat text CVars.
 - `/cvf apply` — reapply enabled controls.
@@ -31,7 +36,7 @@ Turning name/number management off does not restore original console values. Use
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround implemented but **not in-game tested**. The updated diagnostic command is **not yet tested in-game**.
+Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. The new checkbox menu remains **untested in-game**. The updated diagnostic command is **not yet tested in-game**.
 
 No publishing tag, GitHub Release or CurseForge release has been authorized or created.
 
