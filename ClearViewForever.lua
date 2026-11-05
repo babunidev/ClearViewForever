@@ -2,7 +2,7 @@
 -- The game's native 3D overhead names are not addon-owned font strings.
 local ADDON = ...
 local frame = CreateFrame("Frame")
-local defaults = { names = true, numbers = true, errors = true, xp = false }
+local defaults = { names = true, numbers = true, errors = true, xp = false, portraitDamage = false }
 
 local function Say(message)
     if DEFAULT_CHAT_FRAME then
