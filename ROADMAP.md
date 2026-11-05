@@ -4,6 +4,8 @@
 - [x] Implement optional target-portrait damage display using Forever UNIT_COMBAT (not yet tested in-game).
 - [x] Confirm target-portrait damage feedback in Forever — Babuni reports it working.
 - [ ] Test larger portrait font and 30% critical-hit emphasis in Forever.
+- [x] Implement best-effort white physical / yellow ability-style portrait colors, using damage school and recent player casts.
+- [ ] In-game test color rules across auto attacks, physical abilities, magical spells, pets and group combat.
 - [ ] Investigate accurate attribution of player damage; UNIT_COMBAT has no attacker identity.
 - [x] Hide central red error text — confirmed in-game by Babuni, 2026-11-05.
 - [x] Hide floating combat numbers — confirmed in-game by Babuni, 2026-11-05.
