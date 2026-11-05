@@ -1,6 +1,6 @@
 -- Small standalone options window. Loaded after ClearViewForever.lua.
 local panel = CreateFrame("Frame", "ClearViewForeverOptions", UIParent)
-panel:SetSize(350, 260)
+panel:SetSize(370, 301)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 panel:SetFrameStrata("DIALOG")
 panel:EnableMouse(true)
@@ -28,6 +28,7 @@ local options = {
     { key = "errors", label = "Hide red error messages" },
     { key = "numbers", label = "Hide combat numbers" },
     { key = "names", label = "Hide creature names (target name may remain)" },
+    { key = "portraitDamage", label = "Show target damage on portrait" },
 }
 
 local checkboxes = {}
@@ -39,6 +40,11 @@ for index, option in ipairs(options) do
     label:SetText(option.label)
     check:SetScript("OnClick", function(self)
         local hide = self:GetChecked() and "on" or "off"
+        if option.key == "portraitDamage" then
+            SlashCmdList.CLEARVIEWFOREVER("portrait " .. hide)
+            self:SetChecked(ClearViewForeverDB and ClearViewForeverDB.portraitDamage)
+            return
+        end
         -- Reuse the existing command handler so the UI and slash commands behave alike.
         SlashCmdList.CLEARVIEWFOREVER(option.key .. " " .. hide)
         self:SetChecked(ClearViewForeverDB and ClearViewForeverDB[option.key])
