@@ -2,6 +2,8 @@
 
 ## Unreleased — development
 
+- Added best-effort portrait damage colors: physical hits white; magical and recently cast physical abilities yellow. The timing heuristic may misclassify events, particularly in groups. Not in-game tested.
+
 - Matched target damage feedback to the default player portrait's large numeric font (`NumberFontNormalHuge`), with critical hits displayed 30% larger. Sizing change not yet tested in-game.
 - Recorded Babuni's confirmation that target-portrait damage feedback works in Forever.
 
