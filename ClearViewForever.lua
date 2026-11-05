@@ -138,7 +138,8 @@ local function Status()
     Say("Creature names: " .. (ClearViewForeverDB.names and "hide (requested)" or "unmanaged") ..
         "; combat numbers: " .. (ClearViewForeverDB.numbers and "hide (requested)" or "unmanaged") ..
         "; red errors: " .. (ClearViewForeverDB.errors and "hidden" or "visible"))
-    Say("Native targeted-name and XP world-text suppression is not confirmed by Forever's API.")
+    Say("XP world-text workaround: " .. (ClearViewForeverDB.xp and "ON (experimental; affects ALL world text)" or "OFF"))
+    Say("Native targeted-name suppression is not confirmed by Forever's API.")
 end
 
 SLASH_CLEARVIEWFOREVER1 = "/cvf"
