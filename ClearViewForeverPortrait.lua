@@ -7,6 +7,8 @@ local labels = {}
 local slots = 4
 local duration = 0.85
 local active = false
+local lastPlayerSpellAt = -100
+local SPELL_WINDOW = 0.65 -- Heuristic only; physical abilities have no hit-type field in UNIT_COMBAT.
 
 local function EnsureOverlay()
     if overlay then return overlay end
@@ -31,7 +33,7 @@ local function EnsureOverlay()
             font, normalSize, flags = label:GetFont()
         end
         label:SetPoint("CENTER", overlay, "CENTER", 0, 2)
-        label:SetTextColor(1, 0.88, 0.3, 1)
+        label:SetTextColor(1, 1, 1, 1)
         label:SetShadowOffset(1, -1)
         label:Hide()
         labels[i] = {
@@ -73,15 +75,21 @@ local function Enable(enabled)
         if not EnsureOverlay() then return false end
         handler:RegisterUnitEvent("UNIT_COMBAT", "target")
         handler:RegisterEvent("PLAYER_TARGET_CHANGED")
+        handler:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
     else
         handler:UnregisterEvent("UNIT_COMBAT")
         handler:UnregisterEvent("PLAYER_TARGET_CHANGED")
+        handler:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
         Clear()
     end
     return true
 end
 
-handler:SetScript("OnEvent", function(_, event, unit, action, flag, amount)
+handler:SetScript("OnEvent", function(_, event, unit, action, flag, amount, schoolMask)
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        if unit == "player" then lastPlayerSpellAt = GetTime() end
+        return
+    end
     if event == "PLAYER_TARGET_CHANGED" then
         Clear()
         return
@@ -109,6 +117,20 @@ handler:SetScript("OnEvent", function(_, event, unit, action, flag, amount)
     if chosen.font and chosen.normalSize then
         local size = (flag == "CRITICAL") and (chosen.normalSize * 1.3) or chosen.normalSize
         chosen.text:SetFont(chosen.font, size, chosen.fontFlags)
+    end
+    -- The event has damage school, but no attack type or spell identifier.
+    -- Magic damage is yellow; physical damage defaults to white.
+    -- Physical player abilities are estimated from a recent successful cast.
+    -- This approximation can be wrong, especially in group combat.
+    local okSchool, school = pcall(tonumber, schoolMask)
+    local isAbility = okSchool and school and school ~= 1
+    if not isAbility and (now - lastPlayerSpellAt) <= SPELL_WINDOW then
+        isAbility = true
+    end
+    if isAbility then
+        chosen.text:SetTextColor(1, 0.88, 0.3, 1)
+    else
+        chosen.text:SetTextColor(1, 1, 1, 1)
     end
     chosen.text:SetText(value)
     chosen.text:ClearAllPoints()
