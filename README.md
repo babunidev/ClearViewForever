@@ -13,13 +13,17 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
 
+## Target portrait damage (new, untested)
+
+An **optional** checkbox shows damage received by your selected target as a small number over its portrait, without restoring damage text in the world. It uses Forever's `UNIT_COMBAT` event for the `target` unit. It displays **all damage received by that target**, which can include other players or pets: the event does **not** identify the attacker. It does not display AoE damage on enemies you are not targeting. OFF by default. Enable with `/cvf portrait on`, or use the menu. The target frame anchor and actual numeric feedback still require an in-game test.
+
 ## Install
 
 Put the repository files in `World of Warcraft/_forever_/Interface/AddOns/ClearViewForever/`, so that `ClearViewForever.toc` sits directly inside that directory. Enable the addon in the Forever client.
 
 ## In-game menu
 
-Type **`/cvf`** or **`/cvf menu`** to open a compact window with four checkboxes: XP popups, red error messages, combat numbers, and creature names. Checkboxes mean **hide**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The XP checkbox changes global world-text scaling, not XP alone.
+Type **`/cvf`** or **`/cvf menu`** to open a compact window with five checkboxes: XP popups, red error messages, combat numbers, creature names, and target portrait damage. The first four checkboxes mean **hide**; the fifth means **show**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The XP checkbox changes global world-text scaling, not XP alone.
 
 ## Commands
 
@@ -30,13 +34,14 @@ Type **`/cvf`** or **`/cvf menu`** to open a compact window with four checkboxes
 - `/cvf names on|off` — request suppression of ordinary NPC names; cannot guarantee target overhead suppression.
 - `/cvf numbers on|off` — control hiding floating combat numbers.
 - `/cvf errors on|off` — control hiding red error messages.
+- `/cvf portrait on|off` — toggle target-portrait damage feedback (all received target damage, not only yours).
 - `/cvf xp on|off` — enable/disable experimental global world-text scaling. **Affects other world text and is OFF by default.**
 
 Turning name/number management off does not restore original console values. Use in-game options to restore them.
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. The new checkbox menu remains **untested in-game**. The updated diagnostic command is **not yet tested in-game**.
+Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. The new checkbox menu and target-portrait damage remain **untested in-game**. The updated diagnostic command is **not yet tested in-game**.
 
 No publishing tag, GitHub Release or CurseForge release has been authorized or created.
 
