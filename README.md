@@ -13,9 +13,9 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
 
-## Target portrait damage (new, untested)
+## Target portrait damage (confirmed in-game; sizing update untested)
 
-An **optional** checkbox shows damage received by your selected target as a small number over its portrait, without restoring damage text in the world. It uses Forever's `UNIT_COMBAT` event for the `target` unit. It displays **all damage received by that target**, which can include other players or pets: the event does **not** identify the attacker. It does not display AoE damage on enemies you are not targeting. OFF by default. Enable with `/cvf portrait on`, or use the menu. The target frame anchor and actual numeric feedback still require an in-game test.
+An **optional** checkbox shows damage received by your selected target using the player portrait's large numeric font over its portrait, without restoring damage text in the world. It uses Forever's `UNIT_COMBAT` event for the `target` unit. It displays **all damage received by that target**, which can include other players or pets: the event does **not** identify the attacker. It does not display AoE damage on enemies you are not targeting. OFF by default. Enable with `/cvf portrait on`, or use the menu. Babuni confirmed target portrait damage feedback in-game. A subsequent font update uses `NumberFontNormalHuge` for regular hits and enlarges critical hits by 30%; this sizing change awaits in-game verification.
 
 ## Install
 
@@ -41,7 +41,7 @@ Turning name/number management off does not restore original console values. Use
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. The new checkbox menu and target-portrait damage remain **untested in-game**. The updated diagnostic command is **not yet tested in-game**.
+Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. Target-portrait damage was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**.
 
 No publishing tag, GitHub Release or CurseForge release has been authorized or created.
 
