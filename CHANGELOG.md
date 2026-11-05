@@ -2,6 +2,9 @@
 
 ## Unreleased — development
 
+- Added opt-in target-portrait damage feedback with UNIT_COMBAT; untested in-game, and shows all damage received by target.
+- Added fifth options checkbox and /cvf portrait on|off.
+
 - Initialized ClearViewForever repository with 0.1.0-alpha development files.
 - Documented Babuni's Forever in-game confirmation of red-error and combat-number suppression.
 - Recorded that target-name suppression does not work yet.
