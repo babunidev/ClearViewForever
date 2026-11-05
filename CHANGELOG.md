@@ -2,6 +2,9 @@
 
 ## Unreleased — development
 
+- Matched target damage feedback to the default player portrait's large numeric font (`NumberFontNormalHuge`), with critical hits displayed 30% larger. Sizing change not yet tested in-game.
+- Recorded Babuni's confirmation that target-portrait damage feedback works in Forever.
+
 - Added opt-in target-portrait damage feedback with UNIT_COMBAT; untested in-game, and shows all damage received by target.
 - Added fifth options checkbox and /cvf portrait on|off.
 
