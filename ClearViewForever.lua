@@ -26,10 +26,12 @@ local function WriteCVar(name, value)
     if ReadCVar(name) == nil then return false end
     if C_CVar and type(C_CVar.SetCVar) == "function" then
         local ok = pcall(C_CVar.SetCVar, name, value)
-        return ok and ReadCVar(name) == value
+        local result = ReadCVar(name)
+        return ok and (result == value or (tonumber(result) and tonumber(value) and tonumber(result) == tonumber(value)))
     elseif type(SetCVar) == "function" then
         local ok = pcall(SetCVar, name, value)
-        return ok and ReadCVar(name) == value
+        local result = ReadCVar(name)
+        return ok and (result == value or (tonumber(result) and tonumber(value) and tonumber(result) == tonumber(value)))
     end
     return false
 end
@@ -101,12 +103,16 @@ local function SetXPWorldTextHidden(hide)
         if WriteCVar(currentName, "1000") then
             return true, "Experimental world-text scaling applied (affects all world text)."
         end
+        if ReadCVar(currentName) == currentValue then
+            ClearViewForeverDB.xpOriginalScale = nil
+            ClearViewForeverDB.xpScaleCVar = nil
+        end
         return false, "Client did not accept the experimental world-text scale."
     end
     local name, original = ClearViewForeverDB.xpScaleCVar, ClearViewForeverDB.xpOriginalScale
     if not name or not original then return true, "No XP scale change to restore." end
     local current = ReadCVar(name)
-    if current ~= "1000" and current ~= "1000.000000" then
+    if tonumber(current) ~= 1000 then
         return false, "World-text scale changed externally; original value preserved in SavedVariables."
     end
     if WriteCVar(name, original) then
