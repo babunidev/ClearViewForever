@@ -22,12 +22,22 @@ local function EnsureOverlay()
     end
     overlay:SetFrameLevel(TargetFrame:GetFrameLevel() + 5)
     for i = 1, slots do
-        local label = overlay:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        local label = overlay:CreateFontString(nil, "OVERLAY", "NumberFontNormalHuge")
+        -- Blizzard's large numeric font is also used for portrait combat feedback.
+        -- Keep the same baseline typeface; emphasize critical hits separately.
+        local font, normalSize, flags = label:GetFont()
+        if not font or not normalSize then
+            label:SetFontObject(GameFontNormalLarge)
+            font, normalSize, flags = label:GetFont()
+        end
         label:SetPoint("CENTER", overlay, "CENTER", 0, 2)
         label:SetTextColor(1, 0.88, 0.3, 1)
         label:SetShadowOffset(1, -1)
         label:Hide()
-        labels[i] = { text = label, untilTime = 0, offset = (i - 1) * 10 }
+        labels[i] = {
+            text = label, untilTime = 0, offset = (i - 1) * 10,
+            font = font, normalSize = normalSize, fontFlags = flags,
+        }
     end
     overlay:Hide()
     overlay:SetScript("OnUpdate", function(self)
@@ -95,6 +105,11 @@ handler:SetScript("OnEvent", function(_, event, unit, action, flag, amount)
     -- guard conversion in case future combat restrictions protect it.
     local ok, value = pcall(tostring, amount)
     if not ok then return end
+    -- UNIT_COMBAT's flagText identifies critical damage.
+    if chosen.font and chosen.normalSize then
+        local size = (flag == "CRITICAL") and (chosen.normalSize * 1.3) or chosen.normalSize
+        chosen.text:SetFont(chosen.font, size, chosen.fontFlags)
+    end
     chosen.text:SetText(value)
     chosen.text:ClearAllPoints()
     chosen.text:SetPoint("CENTER", overlay, "CENTER", 0, 2 + chosen.offset)
