@@ -2,7 +2,8 @@
 
 ## Current
 - [x] Implement optional target-portrait damage display using Forever UNIT_COMBAT (not yet tested in-game).
-- [ ] Test target-portrait feedback and placement in Forever.
+- [x] Confirm target-portrait damage feedback in Forever — Babuni reports it working.
+- [ ] Test larger portrait font and 30% critical-hit emphasis in Forever.
 - [ ] Investigate accurate attribution of player damage; UNIT_COMBAT has no attacker identity.
 - [x] Hide central red error text — confirmed in-game by Babuni, 2026-11-05.
 - [x] Hide floating combat numbers — confirmed in-game by Babuni, 2026-11-05.
