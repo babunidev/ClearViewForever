@@ -5,7 +5,10 @@
 - [x] Hide floating combat numbers — confirmed in-game by Babuni, 2026-11-05.
 - [ ] Investigate selected creature's native overhead name; current CVar approach does not hide it.
 - [x] Add an optional, reversible **experimental** global world-text-scale workaround for XP popups (off by default).
-- [ ] Verify whether this suppresses XP in Forever; inspect impact on other world text and restore behavior.
+- [x] Confirm XP popup hiding in Forever — Babuni reports success after cycling the control, 2026-11-05.
+- [ ] Test the impact on other world text and restore behavior.
+- [x] Implement minimal persisted four-checkbox options window.
+- [ ] Test options window in Forever, including toggles and reload persistence.
 - [ ] Find an XP-only method that does not affect unrelated text.
 - [ ] Verify latest Forever build and API/CVar support after client updates.
 - [ ] Test updated diagnostic behavior in-game.
