@@ -2,7 +2,7 @@
 
 A minimal screen-clutter addon for **World of Warcraft Forever only**.
 
-**Development version:** `0.1.0-alpha` · **Target:** Forever 1.60.1 / Interface 16001. This is not a public release.
+**Version:** `0.1.0-alpha` · **Target:** Forever 1.60.1 / Interface 16001.
 
 ## What works
 
@@ -14,9 +14,9 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
 
-## Target portrait damage (confirmed in-game; sizing update untested)
+## Target portrait damage
 
-An **optional** checkbox shows damage received by your selected target using the player portrait's large numeric font over its portrait, without restoring damage text in the world. It uses Forever's `UNIT_COMBAT` event for the `target` unit. It displays **all damage received by that target**, which can include other players or pets: the event does **not** identify the attacker. It does not display AoE damage on enemies you are not targeting. OFF by default. Enable with `/cvf portrait on`, or use the menu. Damage colors now use a **best-effort** distinction: physical hits are white by default, magical hits are yellow, and physical abilities may be yellow if a successful player cast was observed in the previous 0.65 seconds. This is not reliable spell attribution: overlap, projectiles, pets, and other players may cause incorrect classifications. The updated colors are **not yet tested in Forever**. Babuni confirmed target portrait damage feedback in-game. A subsequent font update uses `NumberFontNormalHuge` for regular hits and enlarges critical hits by 30%; this sizing change awaits in-game verification.
+An **optional** checkbox shows damage received by your selected target using the player portrait's large numeric font over its portrait, without restoring damage text in the world. It uses Forever's `UNIT_COMBAT` event for the `target` unit. It displays **all damage received by that target**, which can include other players or pets: the event does **not** identify the attacker. It does not display AoE damage on enemies you are not targeting. OFF by default. Enable with `/cvf portrait on`, or use the menu. Damage colors use a **best-effort** distinction: physical hits are white by default, magical hits are yellow, and physical abilities may be yellow if a successful player cast was observed in the previous 0.65 seconds. This is not reliable spell attribution: overlap, projectiles, pets, and other players may cause incorrect classifications. The updated colors and font sizing are **not yet tested in Forever**. Babuni confirmed the basic target portrait damage feedback in-game.
 
 ## Install
 
@@ -24,13 +24,13 @@ Put the repository files in `World of Warcraft/_forever_/Interface/AddOns/ClearV
 
 ## In-game menu
 
-Type **`/cvf`** or **`/cvf menu`** to open a compact window with six checkboxes: XP popups, red error messages, combat numbers, creature names, nameplate visuals, and target portrait damage. The first five checkboxes mean **hide**; the sixth means **show**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The nameplate option makes Blizzard's nameplate `UnitFrame` transparent without disabling the nameplate system. The XP checkbox changes global world-text scaling, not XP alone.
+Type **`/cvf`** or **`/cvf menu`** to open a compact window with six checkboxes: XP popups, red error messages, combat numbers, creature names, nameplate visuals, and target portrait damage. The first five checkboxes mean **hide**; the sixth means **show**. Settings persist across sessions. The creature-name option does **not** hide the native name above the selected target. The nameplate option makes Blizzard's nameplate `UnitFrame` transparent without disabling the nameplate system. The XP checkbox changes global world-text scaling, not XP alone.
 
 ## Commands
 
 - `/cvf` or `/cvf menu` — toggle the options window.
 - `/cvf status` — show enabled controls and limitations.
-- `/cvf diagnose` — print client build, name-related CVars (including the nameplate-only diagnostic), and combat text CVars.
+- `/cvf diagnose` — print client build and relevant CVars.
 - `/cvf apply` — reapply enabled controls.
 - `/cvf names on|off` — request suppression of ordinary NPC names; cannot guarantee target overhead suppression.
 - `/cvf nameplates on|off` — make Blizzard nameplate visuals transparent while keeping nameplate frames, unit tokens and events active.
@@ -43,9 +43,11 @@ Turning name/number management off does not restore original console values. Use
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. Target-portrait damage was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**. The new invisible-nameplate option is implemented but **not yet tested in Forever**.
+Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. Basic target-portrait damage feedback was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**. The new invisible-nameplate option is implemented but **not yet tested in Forever**.
 
-No publishing tag, GitHub Release or CurseForge release has been authorized or created.
+## CurseForge package
+
+The CurseForge archive contains only `ClearViewForever.toc` and the three runtime Lua files, inside the `ClearViewForever/` addon folder. Development documentation remains in the GitHub repository and is excluded from the downloadable archive.
 
 ## Credits
 

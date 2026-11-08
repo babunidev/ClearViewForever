@@ -1,7 +1,6 @@
-# CurseForge packages only the installable addon files.
-# Development notes and research remain available in the GitHub repository.
-
+# CurseForge reads the manual changelog but excludes development files from the addon archive.
 package-as: ClearViewForever
+manual-changelog: CHANGELOG.md
 
 ignore:
   - AGENTS.md

@@ -15,7 +15,7 @@
 - [x] Add an optional, reversible **experimental** global world-text-scale workaround for XP popups (off by default).
 - [x] Confirm XP popup hiding in Forever — Babuni reports success after cycling the control, 2026-11-05.
 - [ ] Test the impact on other world text and restore behavior.
-- [x] Implement minimal persisted four-checkbox options window.
+- [x] Implement minimal persisted options window.
 - [ ] Test options window in Forever, including toggles and reload persistence.
 - [ ] Find an XP-only method that does not affect unrelated text.
 - [ ] Verify latest Forever build and API/CVar support after client updates.
@@ -23,4 +23,6 @@
 - [ ] Restore original CVar values on disabling features, without overriding unrelated settings.
 
 ## Release gate
-No public version authorized. No tags or publication until review and explicit approval.
+- `v0.1.0-alpha` is the initial tag-triggered alpha distribution.
+- Development commits are not public releases; only an explicitly approved version tag should trigger CurseForge packaging.
+- Every later public version requires explicit approval for that exact version.

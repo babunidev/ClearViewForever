@@ -1,24 +1,12 @@
-# Changelog
+# ClearViewForever changelog
 
-## Unreleased — development
+## 0.1.0-alpha
 
-- Added opt-in transparent Blizzard nameplates using `C_NamePlate` and `UnitFrame:SetAlpha(0)`. The nameplate system and unit events remain active; addon visuals parented beneath Blizzard's UnitFrame are hidden too. In-game testing pending.
+Initial alpha package for **World of Warcraft Forever 1.60.1 / Interface 16001**.
 
-- Added best-effort portrait damage colors: physical hits white; magical and recently cast physical abilities yellow. The timing heuristic may misclassify events, particularly in groups. Not in-game tested.
-
-- Matched target damage feedback to the default player portrait's large numeric font (`NumberFontNormalHuge`), with critical hits displayed 30% larger. Sizing change not yet tested in-game.
-- Recorded Babuni's confirmation that target-portrait damage feedback works in Forever.
-
-- Added opt-in target-portrait damage feedback with UNIT_COMBAT; untested in-game, and shows all damage received by target.
-- Added fifth options checkbox and /cvf portrait on|off.
-
-- Initialized ClearViewForever repository with 0.1.0-alpha development files.
-- Documented Babuni's Forever in-game confirmation of red-error and combat-number suppression.
-- Recorded that target-name suppression does not work yet.
-- Added a small four-checkbox in-game menu, opened with `/cvf` or `/cvf menu`. UI implementation awaits in-game testing.
-- Confirmed by Babuni that cycling the XP switch hides XP notifications in Forever.
-- Added an opt-in XP workaround via native world-text scaling, with saved-value restoration and explicit warnings. This affects other world text and is disabled by default.
-- Added read-only nameplateForceShowUnitName diagnostic; this does not control native overhead text.
-- Added developer documentation and research references.
-
-No public releases.
+- Hide central red error messages and supported floating combat numbers. Both have been confirmed in-game.
+- Request suppression of ordinary NPC names through the game's CVars. The native 3D overhead name above the selected target may remain visible.
+- Add optional transparent Blizzard nameplate visuals while keeping the nameplate system, unit tokens and events active. In-game verification is still pending.
+- Add optional target-portrait damage feedback. The basic display has been confirmed in-game, but it reports all damage received by the selected target, including damage from other players and pets. Updated damage colors and critical-hit sizing are not yet verified.
+- Add optional experimental XP popup suppression through global world-text scaling. It affects all native floating world text, not XP alone, and is disabled by default.
+- Include a compact options window, slash commands and saved settings.
