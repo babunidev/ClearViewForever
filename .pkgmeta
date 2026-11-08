@@ -1,0 +1,12 @@
+# CurseForge packages only the installable addon files.
+# Development notes and research remain available in the GitHub repository.
+
+package-as: ClearViewForever
+
+ignore:
+  - AGENTS.md
+  - CHANGELOG.md
+  - CONCEPT.md
+  - README.md
+  - ROADMAP.md
+  - docs
