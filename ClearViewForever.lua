@@ -2,7 +2,7 @@
 -- The game's native 3D overhead names are not addon-owned font strings.
 local ADDON = ...
 local frame = CreateFrame("Frame")
-local defaults = { names = true, numbers = true, errors = true, xp = false, portraitDamage = false }
+local defaults = { names = true, numbers = true, errors = true, xp = false, nameplates = false, portraitDamage = false }
 
 local function Say(message)
     if DEFAULT_CHAT_FRAME then
@@ -59,6 +59,55 @@ local numberNames = {
 
 -- Diagnostic only: this is for NAMEPLATES, not native 3D overhead names.
 local diagnosticCVars = { "nameplateForceShowUnitName" }
+
+-- Keep the nameplate system active while making Blizzard's visual UnitFrame transparent.
+-- Alpha is saved per frame so the user's previous value can be restored when disabled.
+local savedNameplateAlphas = setmetatable({}, { __mode = "k" })
+
+local function SetNameplateFrameHidden(plate)
+    local unitFrame = plate and plate.UnitFrame
+    if not unitFrame or type(unitFrame.GetAlpha) ~= "function" or type(unitFrame.SetAlpha) ~= "function" then
+        return false
+    end
+    if savedNameplateAlphas[unitFrame] == nil then
+        local ok, alpha = pcall(unitFrame.GetAlpha, unitFrame)
+        if not ok or type(alpha) ~= "number" then return false end
+        savedNameplateAlphas[unitFrame] = alpha
+    end
+    local ok = pcall(unitFrame.SetAlpha, unitFrame, 0)
+    if not ok then savedNameplateAlphas[unitFrame] = nil end
+    return ok
+end
+
+local function SetNameplatesHidden(hide)
+    if not hide then
+        local restored = 0
+        for unitFrame, originalAlpha in pairs(savedNameplateAlphas) do
+            local ok, currentAlpha = pcall(unitFrame.GetAlpha, unitFrame)
+            -- Do not overwrite an alpha value changed by another addon while this option was active.
+            if ok and currentAlpha == 0 then
+                local restoredOK = pcall(unitFrame.SetAlpha, unitFrame, originalAlpha)
+                if restoredOK then restored = restored + 1 end
+            end
+            savedNameplateAlphas[unitFrame] = nil
+        end
+        return true, string.format("Restored %d nameplate visual frame(s); nameplate system remains active.", restored)
+    end
+
+    if not C_NamePlate or type(C_NamePlate.GetNamePlates) ~= "function" then
+        return false, "Forever nameplate APIs are unavailable."
+    end
+    local ok, plates = pcall(C_NamePlate.GetNamePlates)
+    if not ok or type(plates) ~= "table" then
+        return false, "Could not enumerate visible nameplates."
+    end
+
+    local hidden = 0
+    for _, plate in ipairs(plates) do
+        if SetNameplateFrameHidden(plate) then hidden = hidden + 1 end
+    end
+    return true, string.format("Made %d visible nameplate frame(s) transparent; nameplate system remains active.", hidden)
+end
 
 local errorSuppressed = false
 local function SetErrorsHidden(hide)
@@ -132,6 +181,13 @@ local function Apply()
     end
     SetErrorsHidden(ClearViewForeverDB.errors)
     if ClearViewForeverDB.xp then SetXPWorldTextHidden(true) end
+    if ClearViewForeverDB.nameplates then
+        local ok, explanation = SetNameplatesHidden(true)
+        if not ok then
+            ClearViewForeverDB.nameplates = false
+            Say("Nameplate hiding unavailable: " .. explanation)
+        end
+    end
 end
 
 local function Status()
@@ -139,6 +195,7 @@ local function Status()
         "; combat numbers: " .. (ClearViewForeverDB.numbers and "hide (requested)" or "unmanaged") ..
         "; red errors: " .. (ClearViewForeverDB.errors and "hidden" or "visible"))
     Say("XP world-text workaround: " .. (ClearViewForeverDB.xp and "ON (experimental; affects ALL world text)" or "OFF"))
+    Say("Nameplate visuals: " .. (ClearViewForeverDB.nameplates and "invisible (system active)" or "visible"))
     Say("Native targeted-name suppression is not confirmed by Forever's API.")
 end
 
@@ -147,6 +204,21 @@ SlashCmdList.CLEARVIEWFOREVER = function(message)
     local command, setting = (message or ""):lower():match("^%s*(%S*)%s*(%S*)")
     if command == "status" or command == "" then
         Status()
+    elseif command == "nameplates" then
+        if setting ~= "on" and setting ~= "off" then
+            Say("Usage: /cvf nameplates on|off (on = transparent, system stays active)")
+            return
+        end
+        local wanted = setting == "on"
+        ClearViewForeverDB.nameplates = wanted
+        local ok, explanation = SetNameplatesHidden(wanted)
+        if not ok and wanted then
+            ClearViewForeverDB.nameplates = false
+            Say("Nameplate warning: " .. explanation)
+        else
+            Say(explanation)
+        end
+        Say("Nameplate hiding " .. (ClearViewForeverDB.nameplates and "enabled" or "disabled") .. ".")
     elseif command == "names" or command == "numbers" or command == "errors" or command == "xp" then
         if setting ~= "on" and setting ~= "off" then
             Say("Usage: /cvf " .. command .. " on|off (on = hide)")
@@ -179,12 +251,14 @@ SlashCmdList.CLEARVIEWFOREVER = function(message)
         for _, name in ipairs(worldScaleCVars) do Say(name .. " = " .. tostring(ReadCVar(name)) .. " (global world text)") end
         Say("A native target overhead name may remain regardless of these values.")
     else
-        Say("Commands: /cvf status | apply | diagnose | names on|off | numbers on|off | errors on|off | xp on|off (experimental)")
+        Say("Commands: /cvf status | apply | diagnose | names on|off | nameplates on|off | numbers on|off | errors on|off | xp on|off (experimental)")
     end
 end
 
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 frame:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == ADDON then
         if type(ClearViewForeverDB) ~= "table" then ClearViewForeverDB = {} end
@@ -197,5 +271,28 @@ frame:SetScript("OnEvent", function(_, event, name)
     elseif event == "PLAYER_LOGIN" then
         Apply()
         frame:UnregisterEvent("PLAYER_LOGIN")
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        if ClearViewForeverDB and ClearViewForeverDB.nameplates then
+            local ok, explanation = SetNameplatesHidden(true)
+            if not ok then
+                ClearViewForeverDB.nameplates = false
+                Say("Nameplate hiding unavailable: " .. explanation)
+            end
+        end
+    elseif event == "NAME_PLATE_UNIT_ADDED" then
+        if ClearViewForeverDB and ClearViewForeverDB.nameplates then
+            local plate
+            if C_NamePlate and type(C_NamePlate.GetNamePlateForUnit) == "function" then
+                local ok, result = pcall(C_NamePlate.GetNamePlateForUnit, name)
+                if ok then plate = result end
+            end
+            if not SetNameplateFrameHidden(plate) then
+                local ok, explanation = SetNameplatesHidden(true)
+                if not ok then
+                    ClearViewForeverDB.nameplates = false
+                    Say("Nameplate hiding unavailable: " .. explanation)
+                end
+            end
+        end
     end
 end)

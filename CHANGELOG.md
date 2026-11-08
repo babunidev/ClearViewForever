@@ -2,6 +2,8 @@
 
 ## Unreleased — development
 
+- Added opt-in transparent Blizzard nameplates using `C_NamePlate` and `UnitFrame:SetAlpha(0)`. The nameplate system and unit events remain active; addon visuals parented beneath Blizzard's UnitFrame are hidden too. In-game testing pending.
+
 - Added best-effort portrait damage colors: physical hits white; magical and recently cast physical abilities yellow. The timing heuristic may misclassify events, particularly in groups. Not in-game tested.
 
 - Matched target damage feedback to the default player portrait's large numeric font (`NumberFontNormalHuge`), with critical hits displayed 30% larger. Sizing change not yet tested in-game.

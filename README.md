@@ -9,6 +9,7 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 - **Central red error messages:** hides the default UIErrorsFrame messages. Confirmed by Babuni in-game on November 5, 2026.
 - **Floating combat damage/healing numbers:** disables supported combat-text CVars. Confirmed by Babuni in-game on November 5, 2026.
 - **Creature names:** requests that normal NPC name CVars be disabled, but the **selected target's native 3D overhead name remains visible**. Not solved.
+- **Blizzard nameplates:** optional transparent rendering of each Blizzard nameplate `UnitFrame`. The nameplate system, unit tokens and nameplate events remain active. Addon visuals parented beneath Blizzard's `UnitFrame` also become transparent. In-game verification pending; this is separate from native 3D world-name suppression.
 - **XP popups:** confirmed by Babuni in-game after toggling the feature off and on. It uses an optional **experimental** workaround via `/cvf xp on`. This changes **all native floating world text** using `WorldTextScale_v2` or `WorldTextScale`, not XP alone. It is disabled by default, has been confirmed to hide XP in Forever but may affect other world labels. `/cvf xp off` attempts to restore the saved original scale; it will not overwrite a scale changed by another addon.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
@@ -23,7 +24,7 @@ Put the repository files in `World of Warcraft/_forever_/Interface/AddOns/ClearV
 
 ## In-game menu
 
-Type **`/cvf`** or **`/cvf menu`** to open a compact window with five checkboxes: XP popups, red error messages, combat numbers, creature names, and target portrait damage. The first four checkboxes mean **hide**; the fifth means **show**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The XP checkbox changes global world-text scaling, not XP alone.
+Type **`/cvf`** or **`/cvf menu`** to open a compact window with six checkboxes: XP popups, red error messages, combat numbers, creature names, nameplate visuals, and target portrait damage. The first five checkboxes mean **hide**; the sixth means **show**. Settings persist across reloads. The creature-name option does **not** hide the native name above the selected target. The nameplate option makes Blizzard's nameplate `UnitFrame` transparent without disabling the nameplate system. The XP checkbox changes global world-text scaling, not XP alone.
 
 ## Commands
 
@@ -32,6 +33,7 @@ Type **`/cvf`** or **`/cvf menu`** to open a compact window with five checkboxes
 - `/cvf diagnose` — print client build, name-related CVars (including the nameplate-only diagnostic), and combat text CVars.
 - `/cvf apply` — reapply enabled controls.
 - `/cvf names on|off` — request suppression of ordinary NPC names; cannot guarantee target overhead suppression.
+- `/cvf nameplates on|off` — make Blizzard nameplate visuals transparent while keeping nameplate frames, unit tokens and events active.
 - `/cvf numbers on|off` — control hiding floating combat numbers.
 - `/cvf errors on|off` — control hiding red error messages.
 - `/cvf portrait on|off` — toggle target-portrait damage feedback (all received target damage, not only yours).
@@ -41,7 +43,7 @@ Turning name/number management off does not restore original console values. Use
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. Target-portrait damage was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**.
+Confirmed in-game **by the user**: error text gone; combat text gone. Target-name suppression **failed in user testing**. XP workaround **confirmed by Babuni in-game**, after toggling once. Target-portrait damage was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**. The new invisible-nameplate option is implemented but **not yet tested in Forever**.
 
 No publishing tag, GitHub Release or CurseForge release has been authorized or created.
 

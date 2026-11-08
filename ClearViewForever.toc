@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: ClearViewForever
-## Notes: Reduces floating names, combat numbers and central error text in WoW Forever.
+## Notes: Reduces screen clutter; can hide nameplate visuals without disabling the system in WoW Forever.
 ## Version: 0.1.0-alpha
 ## Author: Babuni (concept), OpenAI (implementation)
 ## SavedVariables: ClearViewForeverDB

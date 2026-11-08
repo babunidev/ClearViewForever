@@ -1,6 +1,8 @@
 # Roadmap
 
 ## Current
+- [x] Implement opt-in transparent Blizzard nameplate visuals without disabling the nameplate system.
+- [ ] Test new and reused nameplates, friendly and hostile units, reloads, and addons that attach visuals beneath Blizzard's UnitFrame.
 - [x] Implement optional target-portrait damage display using Forever UNIT_COMBAT (not yet tested in-game).
 - [x] Confirm target-portrait damage feedback in Forever — Babuni reports it working.
 - [ ] Test larger portrait font and 30% critical-hit emphasis in Forever.
