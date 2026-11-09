@@ -2,7 +2,7 @@
 
 ## Unreleased — development
 
-- Add an optional combat-only enemy nameplate control using `nameplateShowEnemies`. It saves the prior CVar value at combat start and restores it after combat. It affects hostile NPC and player plates; in-game verification is pending.
+- Replace combat-only enemy nameplate CVar suppression with per-frame `SetAlpha(0)` transparency, sharing alpha state with the general nameplate option. Hostile NPC and player UnitFrames remain active but invisible during combat; in-game verification is pending.
 
 ## 0.1.0-alpha
 
