@@ -55,7 +55,7 @@ Older development builds used `nameplateShowEnemies`. If that build left a saved
 - `NAME_PLATE_UNIT_ADDED` is documented as a Forever nameplate event: https://warcraft.wiki.gg/wiki/NAME_PLATE_UNIT_ADDED
 - `NamePlateFrame.unitToken` identifies the unit represented by a visible plate: https://warcraft.wiki.gg/wiki/API:C_NamePlate.GetNamePlates
 - `UnitCanAttack("player", unitToken)` is documented for Forever 1.60.1 and can distinguish hostile units: https://warcraft.wiki.gg/wiki/API:UnitCanAttack
-- `NAME_PLATE_UNIT_ADDED` and `NAME_PLATE_UNIT_REMOVED` are documented Forever events: https://warcraft.wiki.gg/wiki/NAME_PLATE_UNIT_ADDED and https://warcraft.wiki.gg/wiki/NAME_PLATE_UNIT_REMOVED
+- `NAME_PLATE_UNIT_REMOVED` is documented as a Forever event: https://warcraft.wiki.gg/wiki/NAME_PLATE_UNIT_REMOVED
 - `C_Timer.After` is listed in current Forever addon API guidance; the delayed check is event-driven and does not poll continuously: https://wowforeverguides.com/addons/api-cheatsheet
 
 These references support the API approach. They do not replace live testing on the installed Forever build.
