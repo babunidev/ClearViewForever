@@ -2,7 +2,7 @@
 -- The game's native 3D overhead names are not addon-owned font strings.
 local ADDON = ...
 local frame = CreateFrame("Frame")
-local defaults = { names = true, numbers = true, errors = true, xp = false, nameplates = false, portraitDamage = false }
+local defaults = { names = true, numbers = true, errors = true, xp = false, nameplates = false, combatNameplates = false, portraitDamage = false }
 
 local function Say(message)
     if DEFAULT_CHAT_FRAME then
@@ -58,7 +58,7 @@ local numberNames = {
 }
 
 -- Diagnostic only: this is for NAMEPLATES, not native 3D overhead names.
-local diagnosticCVars = { "nameplateForceShowUnitName" }
+local diagnosticCVars = { "nameplateForceShowUnitName", "nameplateShowEnemies" }
 
 -- Keep the nameplate system active while making Blizzard's visual UnitFrame transparent.
 -- Alpha is saved per frame so the user's previous value can be restored when disabled.
@@ -107,6 +107,59 @@ local function SetNameplatesHidden(hide)
         if SetNameplateFrameHidden(plate) then hidden = hidden + 1 end
     end
     return true, string.format("Made %d visible nameplate frame(s) transparent; nameplate system remains active.", hidden)
+end
+
+-- Hide hostile enemy plates only while the player is in combat. Forever's
+-- combat-start event fires before combat lockdown, allowing this CVar change.
+-- The previous value is saved and restored after combat, unless another
+-- system has changed the CVar in the meantime.
+local ENEMY_NAMEPLATE_CVAR = "nameplateShowEnemies"
+
+local function InCombatLockdownActive()
+    if type(InCombatLockdown) ~= "function" then return false end
+    local ok, active = pcall(InCombatLockdown)
+    return ok and active or false
+end
+
+local function HideCombatEnemyNameplates()
+    local current = ReadCVar(ENEMY_NAMEPLATE_CVAR)
+    if current == nil then
+        return false, "The nameplateShowEnemies CVar is unavailable."
+    end
+
+    if ClearViewForeverDB.combatNameplatesOriginal == nil then
+        ClearViewForeverDB.combatNameplatesOriginal = current
+    end
+
+    if current == "0" then
+        return true, "Enemy nameplates are already disabled."
+    end
+    if WriteCVar(ENEMY_NAMEPLATE_CVAR, "0") then
+        return true, "Enemy nameplates hidden for combat."
+    end
+    return false, "The client did not accept nameplateShowEnemies = 0."
+end
+
+local function RestoreCombatEnemyNameplates()
+    local original = ClearViewForeverDB and ClearViewForeverDB.combatNameplatesOriginal
+    if original == nil then return true, "No saved enemy nameplate setting to restore." end
+    if InCombatLockdownActive() then
+        return true, "The previous enemy nameplate setting will be restored after combat."
+    end
+
+    local current = ReadCVar(ENEMY_NAMEPLATE_CVAR)
+    if current == nil then
+        return false, "Could not read nameplateShowEnemies."
+    end
+    if current ~= "0" then
+        ClearViewForeverDB.combatNameplatesOriginal = nil
+        return true, "Enemy nameplate setting changed externally; left it unchanged."
+    end
+    if WriteCVar(ENEMY_NAMEPLATE_CVAR, original) then
+        ClearViewForeverDB.combatNameplatesOriginal = nil
+        return true, "Previous enemy nameplate setting restored."
+    end
+    return false, "Could not restore the previous enemy nameplate setting."
 end
 
 local errorSuppressed = false
@@ -188,6 +241,11 @@ local function Apply()
             Say("Nameplate hiding unavailable: " .. explanation)
         end
     end
+    -- A stale saved value can remain if the client was closed during combat.
+    if ClearViewForeverDB.combatNameplatesOriginal ~= nil and not InCombatLockdownActive() then
+        local ok, explanation = RestoreCombatEnemyNameplates()
+        if not ok then Say("Combat nameplate restore warning: " .. explanation) end
+    end
 end
 
 local function Status()
@@ -196,6 +254,7 @@ local function Status()
         "; red errors: " .. (ClearViewForeverDB.errors and "hidden" or "visible"))
     Say("XP world-text workaround: " .. (ClearViewForeverDB.xp and "ON (experimental; affects ALL world text)" or "OFF"))
     Say("Nameplate visuals: " .. (ClearViewForeverDB.nameplates and "invisible (system active)" or "visible"))
+    Say("Combat enemy nameplates: " .. (ClearViewForeverDB.combatNameplates and "hidden during combat" or "unmanaged"))
     Say("Native targeted-name suppression is not confirmed by Forever's API.")
 end
 
@@ -219,6 +278,29 @@ SlashCmdList.CLEARVIEWFOREVER = function(message)
             Say(explanation)
         end
         Say("Nameplate hiding " .. (ClearViewForeverDB.nameplates and "enabled" or "disabled") .. ".")
+    elseif command == "combatplates" then
+        if setting ~= "on" and setting ~= "off" then
+            Say("Usage: /cvf combatplates on|off (on = hide hostile nameplates only during combat)")
+            return
+        end
+        local wanted = setting == "on"
+        ClearViewForeverDB.combatNameplates = wanted
+        if wanted then
+            if ClearViewForeverDB.combatNameplatesOriginal ~= nil and ReadCVar(ENEMY_NAMEPLATE_CVAR) == "0" then
+                Say("Combat enemy nameplate hiding is already active.")
+            elseif InCombatLockdownActive() then
+                Say("Combat enemy nameplate hiding enabled; it will apply on your next combat.")
+            else
+                Say("Combat enemy nameplate hiding enabled; hostile plates will be suppressed when combat begins.")
+            end
+        else
+            local ok, explanation = RestoreCombatEnemyNameplates()
+            if not ok then
+                Say("Combat nameplate warning: " .. explanation)
+            else
+                Say("Combat enemy nameplate hiding disabled. " .. explanation)
+            end
+        end
     elseif command == "names" or command == "numbers" or command == "errors" or command == "xp" then
         if setting ~= "on" and setting ~= "off" then
             Say("Usage: /cvf " .. command .. " on|off (on = hide)")
@@ -251,13 +333,15 @@ SlashCmdList.CLEARVIEWFOREVER = function(message)
         for _, name in ipairs(worldScaleCVars) do Say(name .. " = " .. tostring(ReadCVar(name)) .. " (global world text)") end
         Say("A native target overhead name may remain regardless of these values.")
     else
-        Say("Commands: /cvf status | apply | diagnose | names on|off | nameplates on|off | numbers on|off | errors on|off | xp on|off (experimental)")
+        Say("Commands: /cvf status | apply | diagnose | names on|off | nameplates on|off | combatplates on|off | numbers on|off | errors on|off | xp on|off (experimental)")
     end
 end
 
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 frame:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == ADDON then
@@ -271,12 +355,33 @@ frame:SetScript("OnEvent", function(_, event, name)
     elseif event == "PLAYER_LOGIN" then
         Apply()
         frame:UnregisterEvent("PLAYER_LOGIN")
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        if ClearViewForeverDB and ClearViewForeverDB.nameplates then
-            local ok, explanation = SetNameplatesHidden(true)
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        -- This event fires just before combat lockdown on Forever.
+        if ClearViewForeverDB and ClearViewForeverDB.combatNameplates then
+            local ok, explanation = HideCombatEnemyNameplates()
             if not ok then
-                ClearViewForeverDB.nameplates = false
-                Say("Nameplate hiding unavailable: " .. explanation)
+                ClearViewForeverDB.combatNameplates = false
+                RestoreCombatEnemyNameplates()
+                Say("Combat nameplate hiding unavailable: " .. explanation)
+            end
+        end
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        if ClearViewForeverDB then
+            local ok, explanation = RestoreCombatEnemyNameplates()
+            if not ok then Say("Combat nameplate restore warning: " .. explanation) end
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        if ClearViewForeverDB then
+            if ClearViewForeverDB.nameplates then
+                local ok, explanation = SetNameplatesHidden(true)
+                if not ok then
+                    ClearViewForeverDB.nameplates = false
+                    Say("Nameplate hiding unavailable: " .. explanation)
+                end
+            end
+            if not InCombatLockdownActive() then
+                local ok, explanation = RestoreCombatEnemyNameplates()
+                if not ok then Say("Combat nameplate restore warning: " .. explanation) end
             end
         end
     elseif event == "NAME_PLATE_UNIT_ADDED" then

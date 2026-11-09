@@ -1,6 +1,6 @@
 -- Small standalone options window. Loaded after ClearViewForever.lua.
 local panel = CreateFrame("Frame", "ClearViewForeverOptions", UIParent)
-panel:SetSize(370, 335)
+panel:SetSize(370, 370)
 panel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 panel:SetFrameStrata("DIALOG")
 panel:EnableMouse(true)
@@ -29,6 +29,7 @@ local options = {
     { key = "numbers", label = "Hide combat numbers" },
     { key = "names", label = "Hide creature names (target name may remain)" },
     { key = "nameplates", label = "Hide nameplates (keep system active)" },
+    { key = "combatNameplates", label = "Hide enemy nameplates in combat" },
     { key = "portraitDamage", label = "Show target damage on portrait" },
 }
 
@@ -47,7 +48,8 @@ for index, option in ipairs(options) do
             return
         end
         -- Reuse the existing command handler so the UI and slash commands behave alike.
-        SlashCmdList.CLEARVIEWFOREVER(option.key .. " " .. hide)
+        local command = option.key == "combatNameplates" and "combatplates" or option.key
+        SlashCmdList.CLEARVIEWFOREVER(command .. " " .. hide)
         self:SetChecked(ClearViewForeverDB and ClearViewForeverDB[option.key])
     end)
     checkboxes[option.key] = check
@@ -57,7 +59,7 @@ local note = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 note:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 24, 23)
 note:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -24, 23)
 note:SetJustifyH("LEFT")
-note:SetText("XP hiding changes all world text. Hidden nameplates remain active.")
+note:SetText("XP hiding changes all world text. Combat option hides hostile plates only while fighting.")
 
 local function Refresh()
     for key, check in pairs(checkboxes) do

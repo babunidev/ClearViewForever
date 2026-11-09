@@ -1,5 +1,9 @@
 # ClearViewForever changelog
 
+## Unreleased — development
+
+- Add an optional combat-only enemy nameplate control using `nameplateShowEnemies`. It saves the prior CVar value at combat start and restores it after combat. It affects hostile NPC and player plates; in-game verification is pending.
+
 ## 0.1.0-alpha
 
 Initial alpha package for **World of Warcraft Forever 1.60.1 / Interface 16001**.
