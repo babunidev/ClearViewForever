@@ -2,8 +2,8 @@
 
 ## Current
 - [x] Implement opt-in transparent Blizzard nameplate visuals without disabling the nameplate system.
-- [x] Implement separate combat-only hostile nameplate suppression through `nameplateShowEnemies`, preserving the previous CVar value.
-- [ ] Test combat suppression and CVar restoration in Forever, including enabling/disabling during combat and interaction with general nameplate transparency.
+- [x] Implement separate combat-only hostile nameplate transparency with the same per-frame `SetAlpha(0)` method as general nameplate hiding.
+- [ ] Test hostile/friendly filtering, unchanged nameplate CVars, alpha restoration, and independent interaction between the two transparency options in Forever.
 - [ ] Test new and reused nameplates, friendly and hostile units, reloads, and addons that attach visuals beneath Blizzard's UnitFrame.
 - [x] Implement optional target-portrait damage display using Forever UNIT_COMBAT (not yet tested in-game).
 - [x] Confirm target-portrait damage feedback in Forever — Babuni reports it working.
