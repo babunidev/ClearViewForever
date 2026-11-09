@@ -5,6 +5,7 @@
 - [x] Implement separate combat-only hostile nameplate transparency with the same per-frame `SetAlpha(0)` method as general nameplate hiding.
 - [ ] Test hostile/friendly filtering, unchanged nameplate CVars, alpha restoration, and independent interaction between the two transparency options in Forever.
 - [ ] Test new and reused nameplates, friendly and hostile units, reloads, and addons that attach visuals beneath Blizzard's UnitFrame.
+- [ ] Test delayed transparency refreshes and alpha enforcement after entering dungeons/raids; confirm behavior for client-protected friendly plates.
 - [x] Implement optional target-portrait damage display using Forever UNIT_COMBAT (not yet tested in-game).
 - [x] Confirm target-portrait damage feedback in Forever — Babuni reports it working.
 - [ ] Test larger portrait font and 30% critical-hit emphasis in Forever.
