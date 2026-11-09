@@ -61,21 +61,63 @@ local numberNames = {
 local diagnosticCVars = { "nameplateForceShowUnitName", "nameplateShowEnemies" }
 
 -- Keep the nameplate system active while making selected visual UnitFrames transparent.
--- The two options share one alpha state per frame, so disabling one reason never
--- reveals a plate that is still hidden by the other option.
+-- General and combat-only hiding share alpha state. A post-hook keeps accessible
+-- UnitFrames transparent if Blizzard or another addon changes their alpha later.
 local nameplateAlphaStates = setmetatable({}, { __mode = "k" })
+local nameplateAlphaHooks = setmetatable({}, { __mode = "k" })
 local activeNameplateFrames = {}
 local nameplateCheckSerial = {}
+local zoneRefreshSerial = 0
 local combatActive = false
 
+local function IsForbiddenNameplateFrame(unitFrame)
+    if not unitFrame then return true end
+    local methodOK, isForbiddenMethod = pcall(function() return unitFrame.IsForbidden end)
+    if not methodOK then return true end
+    if type(isForbiddenMethod) ~= "function" then return false end
+    local ok, forbidden = pcall(isForbiddenMethod, unitFrame)
+    return not ok or forbidden == true
+end
+
+local function EnsureNameplateAlphaHook(unitFrame)
+    if nameplateAlphaHooks[unitFrame] then return true end
+    if type(hooksecurefunc) ~= "function" then return false end
+
+    local ok = pcall(hooksecurefunc, unitFrame, "SetAlpha", function(self, requestedAlpha)
+        local state = nameplateAlphaStates[self]
+        if not state or not (state.general or state.combat) then return end
+        if IsForbiddenNameplateFrame(self) then return end
+
+        -- Remember the value another system tried to apply, then keep the plate invisible.
+        if type(requestedAlpha) == "number" and requestedAlpha ~= 0 then
+            state.originalAlpha = requestedAlpha
+        end
+        local alphaOK, currentAlpha = pcall(self.GetAlpha, self)
+        if alphaOK and currentAlpha ~= 0 then
+            pcall(self.SetAlpha, self, 0)
+        end
+    end)
+
+    if ok then nameplateAlphaHooks[unitFrame] = true end
+    return ok
+end
+
 local function SetNameplateHiddenReason(unitFrame, reason, hidden)
-    if not unitFrame or type(unitFrame.GetAlpha) ~= "function" or type(unitFrame.SetAlpha) ~= "function" then
+    if not unitFrame then return false end
+
+    local state = nameplateAlphaStates[unitFrame]
+    if IsForbiddenNameplateFrame(unitFrame) then
+        if state then state[reason] = hidden and true or false end
         return false
     end
 
-    local state = nameplateAlphaStates[unitFrame]
+    if type(unitFrame.GetAlpha) ~= "function" or type(unitFrame.SetAlpha) ~= "function" then
+        return false
+    end
+
     if not state then
         if not hidden then return true end
+
         local ok, alpha = pcall(unitFrame.GetAlpha, unitFrame)
         if not ok or type(alpha) ~= "number" then return false end
         state = {
@@ -88,7 +130,6 @@ local function SetNameplateHiddenReason(unitFrame, reason, hidden)
     else
         local ok, currentAlpha = pcall(unitFrame.GetAlpha, unitFrame)
         if not ok or type(currentAlpha) ~= "number" then return false end
-        -- Preserve an alpha change made by another addon while our transparency is active.
         if state.appliedAlpha ~= nil and currentAlpha ~= state.appliedAlpha then
             state.originalAlpha = currentAlpha
         end
@@ -98,8 +139,10 @@ local function SetNameplateHiddenReason(unitFrame, reason, hidden)
     state[reason] = hidden and true or false
 
     if state.general or state.combat then
+        EnsureNameplateAlphaHook(unitFrame)
         local ok = pcall(unitFrame.SetAlpha, unitFrame, 0)
-        if not ok then
+        local alphaOK, currentAlpha = pcall(unitFrame.GetAlpha, unitFrame)
+        if not ok or not alphaOK or currentAlpha ~= 0 then
             state[reason] = previousReason
             if not state.general and not state.combat then
                 nameplateAlphaStates[unitFrame] = nil
@@ -134,9 +177,13 @@ local function GetNameplateUnitFrame(unitToken)
     if not C_NamePlate or type(C_NamePlate.GetNamePlateForUnit) ~= "function" then
         return nil
     end
-    local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unitToken)
+    -- includeForbidden lets us identify protected friendly plates in instances.
+    -- Those frames are still checked with IsForbidden before any visual change.
+    local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unitToken, true)
     if not ok or not plate then return nil end
-    return plate.UnitFrame, plate
+    local frameOK, unitFrame = pcall(function() return plate.UnitFrame end)
+    if not frameOK then return nil end
+    return unitFrame, plate
 end
 
 local function ApplyNameplateUnit(unitToken)
@@ -145,12 +192,12 @@ local function ApplyNameplateUnit(unitToken)
 
     activeNameplateFrames[unitToken] = unitFrame
 
-    local generalHidden = ClearViewForeverDB and ClearViewForeverDB.nameplates
+    local generalHidden = ClearViewForeverDB and ClearViewForeverDB.nameplates == true
     local generalOK = SetNameplateHiddenReason(unitFrame, "general", generalHidden)
 
     local combatHidden = ClearViewForeverDB and ClearViewForeverDB.combatNameplates
         and combatActive and IsHostileNameplateUnit(unitToken)
-    local combatOK = SetNameplateHiddenReason(unitFrame, "combat", combatHidden)
+    local combatOK = SetNameplateHiddenReason(unitFrame, "combat", combatHidden == true)
 
     return generalOK and combatOK
 end
@@ -159,11 +206,14 @@ local function ScheduleNameplateUnitRefresh(unitToken)
     if not C_Timer or type(C_Timer.After) ~= "function" then return end
     local serial = (nameplateCheckSerial[unitToken] or 0) + 1
     nameplateCheckSerial[unitToken] = serial
-    -- Recheck once after the add event in case the unit token was not populated yet.
-    C_Timer.After(0.1, function()
-        if nameplateCheckSerial[unitToken] ~= serial then return end
-        ApplyNameplateUnit(unitToken)
-    end)
+
+    -- Forever may announce a plate before its unit/frame data is ready.
+    for _, delay in ipairs({ 0.1, 0.4 }) do
+        C_Timer.After(delay, function()
+            if nameplateCheckSerial[unitToken] ~= serial then return end
+            ApplyNameplateUnit(unitToken)
+        end)
+    end
 end
 
 local function RefreshVisibleNameplates()
@@ -175,50 +225,67 @@ local function RefreshVisibleNameplates()
         return false, "Could not enumerate visible nameplates."
     end
 
-    local generalHiddenCount, combatHiddenCount = 0, 0
+    local generalHiddenCount, combatHiddenCount, protectedCount = 0, 0, 0
+    local processedFrames = {}
+
     for _, plate in ipairs(plates) do
-        local unitFrame = plate and plate.UnitFrame
-        if unitFrame then
-            local unitToken = plate.unitToken
-            if not unitToken and type(plate.GetUnit) == "function" then
-                local tokenOK, token = pcall(plate.GetUnit, plate)
-                if tokenOK then unitToken = token end
-            end
-            if unitToken then
-                activeNameplateFrames[unitToken] = unitFrame
+        if plate then
+            local unitToken
+            local tokenOK, token = pcall(function() return plate.unitToken end)
+            if tokenOK then unitToken = token end
+            if not unitToken then
+                local methodOK, getUnit = pcall(function() return plate.GetUnit end)
+                if methodOK and type(getUnit) == "function" then
+                    local unitOK, unit = pcall(getUnit, plate)
+                    if unitOK then unitToken = unit end
+                end
             end
 
-            local generalHidden = ClearViewForeverDB and ClearViewForeverDB.nameplates
-            if generalHidden then
-                if SetNameplateHiddenReason(unitFrame, "general", true) then
+            local frameOK, unitFrame = pcall(function() return plate.UnitFrame end)
+            if (not frameOK or not unitFrame) and unitToken then
+                unitFrame = GetNameplateUnitFrame(unitToken)
+            end
+
+            if unitFrame and not processedFrames[unitFrame] then
+                processedFrames[unitFrame] = true
+                if unitToken then activeNameplateFrames[unitToken] = unitFrame end
+
+                local generalHidden = ClearViewForeverDB and ClearViewForeverDB.nameplates == true
+                local combatHidden = ClearViewForeverDB and ClearViewForeverDB.combatNameplates
+                    and combatActive and unitToken and IsHostileNameplateUnit(unitToken)
+
+                if IsForbiddenNameplateFrame(unitFrame) and (generalHidden or combatHidden) then
+                    protectedCount = protectedCount + 1
+                end
+
+                if SetNameplateHiddenReason(unitFrame, "general", generalHidden) and generalHidden then
                     generalHiddenCount = generalHiddenCount + 1
                 end
-            else
-                SetNameplateHiddenReason(unitFrame, "general", false)
-            end
-
-            local combatHidden = ClearViewForeverDB and ClearViewForeverDB.combatNameplates
-                and combatActive and unitToken and IsHostileNameplateUnit(unitToken)
-            if combatHidden then
-                if SetNameplateHiddenReason(unitFrame, "combat", true) then
+                if SetNameplateHiddenReason(unitFrame, "combat", combatHidden == true) and combatHidden then
                     combatHiddenCount = combatHiddenCount + 1
                 end
-            else
-                SetNameplateHiddenReason(unitFrame, "combat", false)
             end
         end
     end
-    return true, generalHiddenCount, combatHiddenCount
+
+    return true, generalHiddenCount, combatHiddenCount, protectedCount
 end
 
 local function SetNameplatesHidden(hide)
     if hide then
-        local ok, generalCount = RefreshVisibleNameplates()
+        local ok, generalCount, ignoredCombatCount, protectedCount = RefreshVisibleNameplates()
         if not ok then return false, generalCount end
-        return true, string.format(
+        local message = string.format(
             "Made %d visible nameplate frame(s) transparent; nameplate system remains active.",
             generalCount
         )
+        if protectedCount > 0 then
+            message = message .. string.format(
+                " The client protected %d friendly frame(s) in this instance from addon changes.",
+                protectedCount
+            )
+        end
+        return true, message
     end
 
     local released = 0
@@ -235,12 +302,19 @@ end
 
 local function SetCombatNameplatesHidden(hide)
     if hide then
-        local ok, generalCount, combatCount = RefreshVisibleNameplates()
-        if not ok then return false, generalCount end
-        return true, string.format(
+        local ok, refreshMessage, combatCount, protectedCount = RefreshVisibleNameplates()
+        if not ok then return false, refreshMessage end
+        local message = string.format(
             "Made %d hostile nameplate frame(s) transparent; nameplate system remains active.",
             combatCount
         )
+        if protectedCount > 0 then
+            message = message .. string.format(
+                " The client protected %d friendly frame(s) in this instance from addon changes.",
+                protectedCount
+            )
+        end
+        return true, message
     end
 
     local released = 0
@@ -253,6 +327,30 @@ local function SetCombatNameplatesHidden(hide)
         "Released combat transparency on %d hostile frame(s); general transparency remains active where enabled.",
         released
     )
+end
+
+local function ScheduleZoneNameplateRefreshes()
+    if not C_Timer or type(C_Timer.After) ~= "function" then return end
+    zoneRefreshSerial = zoneRefreshSerial + 1
+    local serial = zoneRefreshSerial
+
+    -- Instance nameplates can be assembled after PLAYER_ENTERING_WORLD.
+    -- These are finite, event-triggered refreshes, not continuous polling.
+    for _, delay in ipairs({ 0.2, 0.75, 1.5 }) do
+        C_Timer.After(delay, function()
+            if zoneRefreshSerial ~= serial or not ClearViewForeverDB then return end
+            local ok, refreshMessage, ignoredCombatCount, protectedCount = RefreshVisibleNameplates()
+            if not ok and delay == 0.2 then
+                Say("Nameplate refresh warning: " .. refreshMessage)
+            elseif delay == 1.5 and protectedCount > 0
+                and (ClearViewForeverDB.nameplates or (ClearViewForeverDB.combatNameplates and combatActive)) then
+                Say(string.format(
+                    "%d friendly nameplate frame(s) are protected by the client in this instance; addons cannot make those frames transparent.",
+                    protectedCount
+                ))
+            end
+        end)
+    end
 end
 
 local function InCombatLockdownActive()
@@ -354,14 +452,9 @@ local function Apply()
     SetErrorsHidden(ClearViewForeverDB.errors)
     if ClearViewForeverDB.xp then SetXPWorldTextHidden(true) end
 
-    if ClearViewForeverDB.nameplates or (ClearViewForeverDB.combatNameplates and combatActive) then
-        local ok, explanation = RefreshVisibleNameplates()
-        if not ok then
-            if ClearViewForeverDB.nameplates then
-                ClearViewForeverDB.nameplates = false
-            end
-            Say("Nameplate transparency unavailable: " .. explanation)
-        end
+    local ok, explanation = RefreshVisibleNameplates()
+    if not ok and (ClearViewForeverDB.nameplates or ClearViewForeverDB.combatNameplates) then
+        Say("Nameplate transparency unavailable: " .. explanation)
     end
 
     local legacyOK, legacyExplanation = RestoreLegacyCombatNameplateCVar()
@@ -466,6 +559,7 @@ end
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_REGEN_DISABLED")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
@@ -482,6 +576,7 @@ frame:SetScript("OnEvent", function(_, event, unitToken)
     elseif event == "PLAYER_LOGIN" then
         combatActive = InCombatLockdownActive()
         Apply()
+        ScheduleZoneNameplateRefreshes()
         frame:UnregisterEvent("PLAYER_LOGIN")
     elseif event == "PLAYER_REGEN_DISABLED" then
         combatActive = true
@@ -498,15 +593,23 @@ frame:SetScript("OnEvent", function(_, event, unitToken)
     elseif event == "PLAYER_ENTERING_WORLD" then
         if ClearViewForeverDB then
             combatActive = InCombatLockdownActive()
-            if ClearViewForeverDB.nameplates or (ClearViewForeverDB.combatNameplates and combatActive) then
-                local ok, explanation = RefreshVisibleNameplates()
-                if not ok then
-                    if ClearViewForeverDB.nameplates then ClearViewForeverDB.nameplates = false end
-                    Say("Nameplate transparency unavailable: " .. explanation)
-                end
+            local ok, refreshMessage, ignoredCombatCount, protectedCount = RefreshVisibleNameplates()
+            if not ok and (ClearViewForeverDB.nameplates or ClearViewForeverDB.combatNameplates) then
+                Say("Nameplate transparency unavailable: " .. refreshMessage)
+            elseif protectedCount > 0 and (ClearViewForeverDB.nameplates or (ClearViewForeverDB.combatNameplates and combatActive)) then
+                Say(string.format(
+                    "%d friendly nameplate frame(s) are protected by the client in this instance.",
+                    protectedCount
+                ))
             end
+            ScheduleZoneNameplateRefreshes()
             local legacyOK, legacyExplanation = RestoreLegacyCombatNameplateCVar()
             if not legacyOK then Say("Legacy nameplate setting restore warning: " .. legacyExplanation) end
+        end
+    elseif event == "ZONE_CHANGED_NEW_AREA" then
+        if ClearViewForeverDB then
+            RefreshVisibleNameplates()
+            ScheduleZoneNameplateRefreshes()
         end
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         if ClearViewForeverDB and (ClearViewForeverDB.nameplates or (ClearViewForeverDB.combatNameplates and combatActive)) then
