@@ -10,7 +10,7 @@ A minimal screen-clutter addon for **World of Warcraft Forever only**.
 - **Floating combat damage/healing numbers:** disables supported combat-text CVars. Confirmed by Babuni in-game on November 5, 2026.
 - **Creature names:** requests that normal NPC name CVars be disabled. In recent testing, hiding Blizzard nameplate visuals also made the selected target's native overhead name disappear in some cases, but this was intermittent; native 3D name suppression is not considered solved.
 - **Blizzard nameplates:** optional transparent rendering of each Blizzard nameplate `UnitFrame`. The nameplate system, unit tokens and nameplate events remain active. Addon visuals parented beneath Blizzard's `UnitFrame` also become transparent. Babuni reports that most plates become invisible, but some combat-state plates can still appear; full edge-case verification remains pending.
-- **Combat enemy nameplates:** a separate optional control temporarily sets `nameplateShowEnemies` to `0` at combat start and restores the previous value after combat. It affects hostile NPC and hostile player plates, not friendly plates. If enabled after combat has already begun, it takes effect on the next fight. In-game testing is pending.
+- **Combat enemy nameplates:** a separate optional control makes hostile Blizzard nameplate `UnitFrame`s fully transparent with `SetAlpha(0)` during combat. It uses the same per-frame alpha manager as the general nameplate option and does not change `nameplateShowEnemies` or disable the nameplate system. It affects hostile NPC and hostile player plates, not friendly plates. The original per-frame alpha is restored after combat unless the general option is still hiding the same frame. In-game testing is pending.
 - **XP popups:** confirmed by Babuni in-game after toggling the feature off and on. It uses an optional **experimental** workaround via `/cvf xp on`. This changes **all native floating world text** using `WorldTextScale_v2` or `WorldTextScale`, not XP alone. It is disabled by default, has been confirmed to hide XP in Forever but may affect other world labels. `/cvf xp off` attempts to restore the saved original scale; it will not overwrite a scale changed by another addon.
 
 The addon does not alter the target selection circle, target unit frame, combat log or combat mechanics. See [research](docs/TARGET_NAME_RESEARCH.md).
@@ -25,7 +25,7 @@ Put the repository files in `World of Warcraft/_forever_/Interface/AddOns/ClearV
 
 ## In-game menu
 
-Type **`/cvf`** or **`/cvf menu`** to open a compact window with seven checkboxes: XP popups, red error messages, combat numbers, creature names, nameplate visuals, combat enemy nameplates, and target portrait damage. The first six checkboxes mean **hide**; the seventh means **show**. Settings persist across sessions. The creature-name CVar option does not reliably suppress native 3D overhead names. The general nameplate option makes Blizzard's nameplate `UnitFrame` transparent without disabling the nameplate system. The combat option suppresses hostile nameplates only while fighting and restores the previous enemy-nameplate CVar afterward.
+Type **`/cvf`** or **`/cvf menu`** to open a compact window with seven checkboxes: XP popups, red error messages, combat numbers, creature names, nameplate visuals, combat enemy nameplates, and target portrait damage. The first six checkboxes mean **hide**; the seventh means **show**. Settings persist across sessions. The creature-name CVar option does not reliably suppress native 3D overhead names. The general nameplate option makes Blizzard's nameplate `UnitFrame` transparent without disabling the nameplate system. The combat option makes hostile nameplate `UnitFrame`s transparent only while fighting; nameplate frames, unit tokens and events remain active. The two options share alpha state, so disabling one does not reveal a plate still hidden by the other.
 
 ## Commands
 
@@ -35,7 +35,7 @@ Type **`/cvf`** or **`/cvf menu`** to open a compact window with seven checkboxe
 - `/cvf apply` — reapply enabled controls.
 - `/cvf names on|off` — request suppression of ordinary NPC names; cannot guarantee target overhead suppression.
 - `/cvf nameplates on|off` — make Blizzard nameplate visuals transparent while keeping nameplate frames, unit tokens and events active.
-- `/cvf combatplates on|off` — hide hostile enemy nameplates during combat; restore the previous `nameplateShowEnemies` value afterward. Includes hostile players as well as NPCs.
+- `/cvf combatplates on|off` — make hostile enemy nameplate `UnitFrame`s transparent during combat using `SetAlpha(0)`. Includes hostile players as well as NPCs; leaves the nameplate system and `nameplateShowEnemies` CVar unchanged.
 - `/cvf numbers on|off` — control hiding floating combat numbers.
 - `/cvf errors on|off` — control hiding red error messages.
 - `/cvf portrait on|off` — toggle target-portrait damage feedback (all received target damage, not only yours).
@@ -45,7 +45,7 @@ Turning name/number management off does not restore original console values. Use
 
 ## Verification
 
-Confirmed in-game **by the user**: error text gone; combat text gone. XP workaround **confirmed by Babuni in-game**, after toggling once. Basic target-portrait damage feedback was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**. General nameplate transparency has partial user confirmation, but intermittent combat-state plates remain. The separate combat enemy-nameplate CVar option is implemented but **not yet tested in Forever**. Native target-name suppression remains intermittent and unconfirmed.
+Confirmed in-game **by the user**: error text gone; combat text gone. XP workaround **confirmed by Babuni in-game**, after toggling once. Basic target-portrait damage feedback was **confirmed by Babuni in-game**. The new font sizing and critical emphasis remain **untested in-game**. The menu has no separately reported test outcome. The updated diagnostic command is **not yet tested in-game**. General nameplate transparency has partial user confirmation, but intermittent combat-state plates remain. The separate combat enemy-nameplate transparency option is implemented but **not yet tested in Forever**. Native target-name suppression remains intermittent and unconfirmed.
 
 ## CurseForge package
 
