@@ -29,7 +29,7 @@ local options = {
     { key = "numbers", label = "Hide combat numbers" },
     { key = "names", label = "Hide creature names (target name may remain)" },
     { key = "nameplates", label = "Hide nameplates (keep system active)" },
-    { key = "combatNameplates", label = "Hide enemy nameplates in combat" },
+    { key = "combatNameplates", label = "Make enemy nameplates transparent in combat" },
     { key = "portraitDamage", label = "Show target damage on portrait" },
 }
 
@@ -59,7 +59,7 @@ local note = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 note:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 24, 23)
 note:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -24, 23)
 note:SetJustifyH("LEFT")
-note:SetText("XP hiding changes all world text. Combat option hides hostile plates only while fighting.")
+note:SetText("XP hiding changes all world text. Combat plates stay active but become transparent.")
 
 local function Refresh()
     for key, check in pairs(checkboxes) do
