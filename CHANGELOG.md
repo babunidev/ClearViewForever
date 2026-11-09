@@ -3,6 +3,7 @@
 ## Unreleased — development
 
 - Replace combat-only enemy nameplate CVar suppression with per-frame `SetAlpha(0)` transparency, sharing alpha state with the general nameplate option. Hostile NPC and player UnitFrames remain active but invisible during combat; in-game verification is pending.
+- Reapply nameplate transparency after zone/instance loading and guard accessible UnitFrames against later alpha resets. Friendly nameplates protected by the client inside dungeons and raids remain outside addon control.
 
 ## 0.1.0-alpha
 
