@@ -1,10 +1,10 @@
 # ClearViewForever
 
-A minimal screen-clutter addon for **World of Warcraft Forever only**.
+ClearViewForever lets you hide selected combat text, error messages and nameplate visuals in **World of Warcraft Forever**.
 
 **Version:** `0.1.0-alpha` · **Target:** Forever 1.60.1 / Interface 16001.
 
-## What works
+## Display controls and test status
 
 - **Central red error messages:** hides the default UIErrorsFrame messages. Confirmed by Babuni in-game on November 5, 2026.
 - **Floating combat damage/healing numbers:** disables supported combat-text CVars. Confirmed by Babuni in-game on November 5, 2026.
