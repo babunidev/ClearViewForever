@@ -1,5 +1,7 @@
 # Repository instructions
 
+Follow [the documentation standard](docs/DOCUMENTATION.md) for first-person author voice throughout project documentation, factual changelogs, and naming the AI tool and verified model for each contribution.
+
 This repository supports **World of Warcraft Forever exclusively**. Baseline: 1.60.1 / Interface 16001; reverify on client updates.
 
 Before changes, read this file, `docs/DOCUMENTATION.md`, README, concept, roadmap, changelog, relevant Lua and TOC files; review branch, status, commits, and tags. Protect unrelated work.
