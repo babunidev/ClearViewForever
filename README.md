@@ -54,3 +54,7 @@ The CurseForge archive contains only `ClearViewForever.toc` and the three runtim
 ## Credits
 
 Concept and creative direction: Babuni. Technical implementation and documentation: OpenAI. No borrowed source code or artwork.
+
+## License
+
+Original addon software is licensed under [MIT](LICENSE). World of Warcraft content and game-client assets are not licensed by this repository.
