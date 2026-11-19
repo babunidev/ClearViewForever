@@ -9,3 +9,7 @@ Before changes, read this file, `docs/DOCUMENTATION.md`, README, concept, roadma
 Babuni controls concept, scope and public release decisions. Preserve existing user-confirmed behavior and avoid engine hacks that interfere with target selection, circle, target frame, combat or UI safety. Clearly distinguish verified Forever behavior from historical WoW references and untested guesses.
 
 Document implementation, tests, limitations and AI contributions accurately. Development commits may be pushed, but **never tag, publish GitHub Release, or upload to CurseForge without explicit approval for that version**. No release is authorized currently.
+
+## Repository layout
+
+The repository root holds only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md` (plus any additional license files). All other documentation lives in `docs/`; put new documents there.

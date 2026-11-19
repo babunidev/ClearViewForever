@@ -2,6 +2,9 @@
 
 ## Unreleased — development
 
+### Changed — documentation moved into `docs/` (2026-11-19)
+- Moved `CONCEPT.md` and `ROADMAP.md` into `docs/`. The root keeps only `README.md`, `AGENTS.md`, `LICENSE` and `CHANGELOG.md`; links to the moved files and the documentation rules in `AGENTS.md` were updated. No code changed. Claude Code (Claude Opus 5.5).
+
 - Replace combat-only enemy nameplate CVar suppression with per-frame `SetAlpha(0)` transparency, sharing alpha state with the general nameplate option. Hostile NPC and player UnitFrames remain active but invisible during combat; in-game verification is pending.
 - Reapply nameplate transparency after zone/instance loading and guard accessible UnitFrames against later alpha resets. Friendly nameplates protected by the client inside dungeons and raids remain outside addon control.
 
